@@ -10,8 +10,6 @@ type Score =
     | Player2Wins
     | Other of PlayerScore * PlayerScore 
 
-let (|Even|Odd|) input input2 = if input % 2 = 0 then Even else Odd
-
 let normalizePlayerScore p1Points p2Points = 
 
     let calculate p1 p2 = 
