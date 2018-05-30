@@ -1,23 +1,8 @@
 module Tests
 
-open System
-open Xunit
-
-
-
-[<Fact>]
-let ``My test`` () =
-    Assert.True(true)
-
-type Difference = int
-
 type PlayerScore = Love | Fifteen | Thirty | Forty | Advantage | Winner
 
-type Draws = 
-    | LoveAll
-    | FifteenAll
-    | ThirtyAll
-    | Deuce
+type Draws =  LoveAll | FifteenAll | ThirtyAll | Deuce
 
 type Score = 
     | Draw of Draws
@@ -25,28 +10,33 @@ type Score =
     | Player2Wins
     | Other of PlayerScore * PlayerScore 
 
-let normalizePlayerScore p1 p2 = 
-    match p1, p2 with
-    | 0,_ -> Love
-    | 1,_ -> Fifteen
-    | 2,_ -> Thirty
-    | 3,_ -> Forty
-    | x, y when x <= y -> Forty
-    | x, y when x > y -> Advantage
-    | x, y when (x - y) >= 2 -> Winner
+let (|Even|Odd|) input input2 = if input % 2 = 0 then Even else Odd
 
-let calculateScore a b : Score =
-    match a, b with
+let normalizePlayerScore p1Points p2Points = 
+
+    let calculate p1 p2 = 
+        match p1 - p2 with
+        | x when x <= 0 -> Forty
+        | x when x = 1 -> Advantage
+        | x when x >= 2 -> Winner
+        
+    match p1Points with
+    | 0 -> Love
+    | 1 -> Fifteen
+    | 2 -> Thirty
+    | 3 -> Forty
+    | _ -> calculate p1Points p2Points
+
+let normalizeMatchScore p1Score p2Score = (normalizePlayerScore p1Score p2Score) , (normalizePlayerScore p2Score p1Score)
+
+let calculateScore matchScore : Score =
+    match matchScore with
     | Love, Love        -> Draw LoveAll
     | Fifteen, Fifteen  -> Draw FifteenAll
     | Thirty, Thirty    -> Draw ThirtyAll
     | Forty, Forty      -> Draw Deuce
     | Winner, _         -> Player1Wins
     | _, Winner         -> Player2Wins
-    | _                 -> Other (a , b)
+    | _                 -> Other matchScore
 
-let score a b =
-    let p1Score = (normalizePlayerScore a b) 
-    let p2Score = (normalizePlayerScore b a)
-
-    calculateScore p1Score p2Score
+let score p1Points p2Points = normalizeMatchScore p1Points p2Points |> calculateScore
